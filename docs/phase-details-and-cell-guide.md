@@ -1,6 +1,6 @@
 # PROJECT EDEN phase guide and notebook cell notes
 
-This guide records actual source and saved evidence. The original handbook and Notion phase map were recovered and agree on the six phases below. The climate notebooks named 04/05 were created out of that sequence; they remain useful prototypes for original 08. New EDEN-06 consolidates the missing original 04–06 vision work and is awaiting Kaggle execution.
+This guide records actual source and saved evidence. The original handbook and Notion phase map were recovered and agree on the six phases below. The climate notebooks named 04/05 were created out of that sequence; they remain useful prototypes for original 08. EDEN-06 consolidates the missing original 04–06 vision work; its saved outputs are reviewed below. EDEN-07 alignment is prepared for Kaggle.
 
 ## Six-phase project map — original handbook
 
@@ -13,7 +13,7 @@ This guide records actual source and saved evidence. The original handbook and N
 | 5 — Research evaluation & browser export | 14 frozen evaluation, 15 export | Freeze selection, disclose earlier test exposure, verify browser predictions match the exported model. Export parity = the two implementations agree. |
 | 6 — Website, dashboard & release | Shared browser state, worker inference, 2D/3D dashboard, deployment | Verify observed/predicted/simulated provenance, consistent state and reproducible release. Provenance = where a value came from. |
 
-The recovered source is EDEN SRS & Implementation Handbook rev 1.0. The separate v2 file named by the handoff is still unavailable; no v2-only requirements are inferred. Original 07–15 and the website remain planned.
+The recovered source is EDEN SRS & Implementation Handbook rev 1.0. The separate v2 file named by the handoff is still unavailable; no v2-only requirements are inferred. Original 07 is now prepared; 08–15 and the website remain planned.
 
 ## Phase 1 — cell-by-cell guide
 
@@ -131,7 +131,7 @@ Input: EDEN-01 v1.1 and EDEN-04 v1.0 result bundles. Output: EDEN-05-Climate-Mod
 
 ## EDEN-06 — Vision recovery and feature extraction v1.0
 
-**Status:** implemented, statically checked, not run locally; Kaggle results pending. Combines the missing original 04 baseline, 05 neural model and 06 feature-export work. After its result review, the planned next notebook is original 07 alignment.
+**Status:** saved Kaggle run verified; 28/28 file hashes pass and 24 metrics were independently recomputed. Combines original 04 baselines, 05 neural models and 06 feature exports. Canopy transfer remains unvalidated. Next is original 07 alignment.
 
 **Inputs:** EDEN-01 v1.1, EDEN-02 v1.1 and EDEN-03 v1.0 results. GPU and Internet On. It fetches 383 RGB/depth pairs from the labeled 2023 pre-trial (about 5.61 GB); publisher test and infrared are excluded. No extra manual dataset upload is required.
 
@@ -154,6 +154,43 @@ Input: EDEN-01 v1.1 and EDEN-04 v1.0 result bundles. Output: EDEN-05-Climate-Mod
 **Leakage rules:** 2023 publisher train/validation samples form a new 80/20 plant-group development protocol, with three OOF folds inside training. Publisher test is excluded. The final encoder sees only 2023 training data, which is disjoint from 2024 fusion data. The 2024 table uses this frozen-disjoint alternative; it is not mislabeled as canopy K-fold predictions. Existing 2024 compartment and chronological splits are preserved.
 
 **Limits:** single-plant-to-canopy transfer is unvalidated; canopy values use `proxy_*` fields. Native depth units and physical geometry remain unverified; color masks remain heuristic. Dropout variance is uncalibrated. Preparation inspected source test metadata, but did not evaluate or select using test performance; the notebook never loads publisher test labels. A successful run establishes computational outputs, not full scientific acceptance.
+
+### EDEN-06 observed result
+
+311 training images / 146 plant groups, 72 validation images / 37 disjoint groups. All 311 OOF rows map to held groups absent from their fold model's training; all six label scalers match their fit IDs. The 36 canopy IDs and split labels are unchanged; 32 have usable features and four dark frames retain missing model values.
+
+| Trait | RGB-only validation MAE | RGB-D validation MAE |
+| --- | --- | --- |
+| Height | 3.342 cm | 3.377 cm |
+| Fresh weight | 34.362 g | 37.577 g |
+| Leaf area | 157.199 cm² | 149.267 cm² |
+| Red-fruit count | 3.593 | 3.986 |
+
+RGB-only has lower error on three traits; RGB-D has lower leaf-area error. There is no general depth benefit established here. Negative fruit predictions occur in 21 RGB validation rows, seven RGB-D validation rows and 92 OOF rows. Validation fruit labels reach 124 versus 37 in training. These are unrestricted regression estimates, not usable physical counts. EDEN-07 excludes all trait proxies from default model inputs and retains them only for auditing.
+
+## EDEN-07 — Climate and vision alignment v1.0
+
+**Status:** prepared; schema, syntax and source contracts checked without executing its cells. **Kaggle:** CPU, Internet Off, attach EDEN-01 v1.1 and EDEN-06 v1.0 results. No other dataset is needed.
+
+| Cell | Short note | Term explained |
+| --- | --- | --- |
+| 1. Settings | Set 72 history readings, three climate targets and five forecast horizons. | Origin = forecast start; horizon = how far ahead. |
+| 2. Verify inputs | Check all files and shared climate lineage; preserve split bytes. | Manifest = file receipt with fingerprints. |
+| 3. Check contracts | Verify unique keys, UTC grid, frozen split labels and disjoint encoder provenance. | Key = fields identifying one observation. |
+| 4. Climate and controls | Verify already joined weather, add recorded controls, distinguish setpoints, preserve raw values and QC masks. | Setpoint = requested value, not the measured actuator state. |
+| 5. Backward image join | Join only prior images within the same group/split; mask old or rejected image values. | Backward join = use the most recent observation that already existed. |
+| 6. Forecast windows | Index complete histories and same-split future endpoints at 15/30/60/180/360 minutes. | Window = one history and its forecast target; embargo = excluded buffer time. |
+| 7. Scalers | Fit separately on each protocol's training data; count each training image once for image-level statistics. | Scaling = place values on comparable numeric ranges; validity mask = whether an input is usable. |
+| 8. Coverage and export | Save aligned tables, windows, scaler parameters, input contracts and coverage. | Coverage = how often usable image/context data exists. |
+| 9. Gate and ZIP | Check row pointers, continuity, splits, hashes and serialization; package a named result. | Pointer = row number used to retrieve the exact observation. |
+
+**Timing:** 72 samples spaced five minutes apart span 355 minutes. Use that as the image-age cap. Image features are origin-only; do not stack prior carried-forward image context as history. Images cannot cross chronological split/embargo boundaries. The latest bad frame is flagged rather than silently replaced by an older good frame.
+
+**Feature contract:** climate, recorded weather, measured actuators, separately named logged setpoints, deterministic time features and their masks. Optional origin image embeddings, age and quality remain experimental. Trait proxies, heuristic green masks, stale-image diagnostics, future observed weather/actions and 2023 OOF rows are excluded from default model inputs. Image capture time is treated as availability time; operational processing delay is not measured.
+
+**Outputs:** `data/aligned.parquet` (one copy per evaluation protocol), `data/window_index.parquet`, `data/windows.json`, `data/scaler.json`, feature/split/schema contracts, coverage and rejection reports, manifest. Raw missing values stay missing. Later models may use zero after normalization only alongside the explicit validity mask. Constant/absent training fields stay inactive even if they vary in validation/test.
+
+**Next:** review the actual EDEN-07 results, then build original EDEN-08 climate baselines on matched windows. No forecasting performance is claimed by alignment.
 
 ## Required next documentation when artifacts arrive
 

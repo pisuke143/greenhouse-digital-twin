@@ -1,6 +1,6 @@
 # PROJECT EDEN phase guide and notebook cell notes
 
-This guide separates observed implementation from the roadmap. Cell notes below were derived from the notebook source and, for EDEN-02, its saved execution outputs. Later phases have no notebooks in the supplied workspace; their descriptions explain the project direction without claiming implemented cells or fixed notebook assignments.
+This guide covers actual notebook source and saved run evidence where available. EDEN-04 has a verified saved bundle with a documented window-contract defect. EDEN-05 is prepared but unrun. Later phase assignments remain a working outline pending the full SRS.
 
 ## Six-phase project map
 
@@ -9,7 +9,7 @@ The project handoff identifies six phases and 16 notebooks (EDEN-00–15), but t
 | Phase | Working scope | Current evidence and gate | Short jargon guide |
 | --- | --- | --- | --- |
 | 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; EDEN-03 reports PARTIAL_PASS_QC_FLAGS_PRESENT. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
-| 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | Provisional EDEN-04 v1.0 is prepared but unrun; exact phase/notebook allocation awaits the full SRS. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
+| 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | EDEN-04 ran but its seasonal window violates the frozen contract; EDEN-05 is prepared with complete window checks. Exact phase/notebook allocation awaits the full SRS. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
 | 3 — Crop-state estimation | Convert image/spatial evidence into crop-state features or estimates and assess their quality against available references | Planned. No phase-3 notebook or result was supplied. Gate should include labeled/traceable observations, held-out evaluation, and image/depth QC. | **Segmentation** = labeling pixels by object, such as plant/background. **Feature** = measured input used by a model. **Ground truth** = reference label or measurement used for evaluation. |
 | 4 — Physics-guided multimodal fusion | Combine climate/control time series and crop-state observations with physical constraints or process knowledge | Planned. No phase-4 notebook or result was supplied. Gate should compare climate-only, vision-only, and fused approaches with matched evaluation splits. | **Multimodal** = using different data types together. **Fusion** = combining information sources. **Ablation** = remove one component to see what it contributes. |
 | 5 — Virtual control and MPC | Simulate candidate greenhouse control actions and evaluate constrained virtual model predictive control | Planned. No phase-5 notebook or result was supplied. No physical actuators are in scope per handoff. Gate should test constraints, uncertainty, and safe simulated scenarios before comparing policies. | **MPC** = model predictive control; repeatedly forecasts outcomes and chooses an action over a moving time window. **Setpoint** = desired target. **Constraint** = limit an action or state must obey. |
@@ -95,7 +95,7 @@ Goal: use the EDEN-02 pilot to create image-space vegetation masks, summarize na
 
 ## Phase 2 — provisional EDEN-04 cell guide
 
-### EDEN-04 v1.0 — Climate forecasting baseline (prepared; Kaggle run pending)
+### EDEN-04 v1.0 — Climate forecasting baseline (saved run; protocol correction required)
 
 **Working scope:** a simple reference forecast using verified EDEN-01 air-temperature measurements. One hour (12 five-minute steps) is a starter horizon within the split file's 72-step maximum. The full SRS is missing, so this notebook ID, phase assignment, target, and horizon remain provisional.
 
@@ -109,7 +109,25 @@ Goal: use the EDEN-02 pilot to create image-space vegetation masks, summarize na
 | 6. Plot and record coverage | Saves a validation example and records window counts and limitations. | **Coverage** = count of usable examples after split and QC rules. |
 | 7. Acceptance and ZIP | Checks both baselines and holdout windows, writes a provisional status and hash-listed result ZIP. | **Acceptance gate** = required checks before handoff. |
 
-No EDEN-04 forecast outputs or metrics are claimed until its Kaggle run is returned and reviewed.
+**Saved result:** PASS_BASELINE_EVAL_PROVISIONAL; 6/6 output hashes verified. Primary validation MAE: persistence 0.8282 °C, yesterday 0.9453 °C. Chronological validation MAE: persistence 0.8236 °C, yesterday 1.1568 °C.
+
+**Review correction:** Cell 4 checked origin and target split labels but did not check the seasonal predictor's history label. Its reading is 23 hours before the origin, beyond the six-hour history contract. Exactly 1,656 validation and 1,656 test rows in the chronological output use history from a different split or embargo. Preserve the saved scores as diagnostic only. EDEN-05 rebuilds valid matched windows and recomputes persistence.
+
+### EDEN-05 v1.0 — Climate model (prepared; Kaggle run pending)
+
+Input: EDEN-01 v1.1 and EDEN-04 v1.0 result bundles. Output: EDEN-05-Climate-Model-Results-v1.0.zip. CPU, Internet Off; leave test scoring disabled during development.
+
+| Cell | Short note | Term explained |
+| --- | --- | --- |
+| 1. Settings | Choose 72 input readings and a 12-step forecast horizon. | Lag = an earlier reading. |
+| 2. Verify inputs | Verify both producers, file hashes, and their shared EDEN-01 lineage; accept ZIPs or extracted folders. | Lineage = which input version produced a result. |
+| 3. Check contracts | Validate target units, UTC cadence, and both frozen split definitions. | Embargo = unused time buffer between chronological groups. |
+| 4. Build windows | Require all input-to-target ticks to stay in one split; reject windows with missing or suspect temperature inputs. | Window = the history and target for one forecast. |
+| 5. Train and select | Fit scaler and Ridge on training only; select alpha on validation, then freeze portable coefficients. | Ridge = linear model with a penalty on large weights; alpha controls that penalty. |
+| 6. Evaluate | Compare Ridge/persistence on identical validation rows; optionally score frozen models on test; report exploratory day-block error intervals. | Bootstrap = resample groups of observations to inspect estimate variability. |
+| 7. Package | Verify matched counts, export versions, contracts, models, reports, and hashed ZIP. | A pipeline pass does not imply improvement over persistence. |
+
+No EDEN-05 model metrics are claimed yet. The notebook's syntax was parsed without running its cells. Its scope remains provisional pending the full SRS.
 
 ## Required next documentation when artifacts arrive
 

@@ -4,13 +4,15 @@ PROJECT EDEN (Environmental Digital Twin for Ecosystem Intelligence and Navigati
 
 ## Current state
 
-- **Phase 1 — Data engineering & inventory (EDEN-00–03): in progress.** EDEN-00 v1.1 and EDEN-01 v1.1 have saved successful outputs. EDEN-02 v1.1 has a saved `PASS_RGBD_PILOT` result with 36 RGB/depth pairs. EDEN-03 v1.0 is prepared; its Kaggle run and review are pending.
-- **EDEN-04–15 and dashboard:** planned; no implementation or performance results are claimed.
+- **Phase 1 — Data engineering & inventory (EDEN-00–03): in progress.** EDEN-00 v1.1 and EDEN-01 v1.1 have saved successful outputs. EDEN-02 v1.1 has a saved `PASS_RGBD_PILOT` result with 36 RGB/depth pairs. EDEN-03 v1.0 ran and produced `PARTIAL_PASS_QC_FLAGS_PRESENT`; mask and image QC review remains open.
+- **EDEN-04 v1.0:** a provisional, unrun climate baseline notebook is prepared in the Phase 2 folder. Its one-hour air-temperature horizon and scope need confirmation against the full SRS.
+- **EDEN-05–15 and dashboard:** planned; no implementation or performance results are claimed.
 - The handoff names 16 notebooks and six phases, but the complete SRS defining phases 2–6 is not present in this workspace. Those phase boundaries remain pending specification rather than guessed.
 
 ## Repository structure
 
 - `phases/phase-1-data-engineering/notebooks/` contains latest notebook versions available here.
+- `phases/phase-2-climate-forecasting/notebooks/` contains the provisional EDEN-04 baseline notebook.
 - `archive/phase-1/prior-notebook-versions/` retains originals and earlier versions.
 - Results archives and raw data are excluded because they are large; EDEN-02 result ZIP is ~559 MB and the source camera archive is ~31.4 GB.
 
@@ -21,7 +23,7 @@ PROJECT EDEN (Environmental Digital Twin for Ecosystem Intelligence and Navigati
 | EDEN-00 v1.1 — Inventory | Pin official source; inspect numeric archive and schemas; record hashes | 8/8 manifest entries verified, eight genuine CSVs, zero parse errors | inventory, source manifest, schema inventory/map, reports |
 | EDEN-01 v1.1 — Climate ETL | Normalize time, preserve QC/missingness, align climate/weather/controls, freeze splits | `PASS_ETL`; 29/29 tracked hashes verified; 129,966 compartment rows | climate, weather, controls, raw tables, splits, quality reports |
 | EDEN-02 v1.1 — RGB-D acquisition | Select bounded image pilot; selectively read archive ranges; pair/decode RGB and depth | `PASS_RGBD_PILOT`; 36 pairs; empty decode-failures report | image index, RGB/depth PNGs, calibration candidates, pairing/acquisition reports |
-| EDEN-03 v1.0 — Spatial processing | Create first-pass green-pixel masks, summarize native depth codes, and flag image QC | Notebook prepared; Kaggle run pending | image-space features, masks, montage, QC report |
+| EDEN-03 v1.0 — Spatial processing | Create first-pass green-pixel masks, summarize native depth codes, and flag image QC | `PARTIAL_PASS_QC_FLAGS_PRESENT`; 36 pairs processed; 41/41 output hashes verified; 4 dark-image flags; 9 empty masks | image-space features, masks, montage, QC report |
 
 ### EDEN-00/01 findings
 
@@ -33,18 +35,26 @@ The supplied `EDEN-02-RGBD-Acquisition-Results-v1.1.zip` is 559,027,047 bytes. I
 
 **Calibration limit:** candidate files do not yet prove metric calibration. Verify numeric intrinsics, depth units/invalid codes, and reference-plane semantics before reporting metric geometry. Until then, label features as image-space or relative and preserve original depth values. The pilot is a subset, not the complete image dataset.
 
+### EDEN-03 saved run
+
+The EDEN-03 v1.0 result ZIP contains 41 manifest-listed output files; every size and SHA-256 matched. It processed 36 pairs and reports `PARTIAL_PASS_QC_FLAGS_PRESENT`, with no metric geometry. Four images were flagged as very dark and nine produced empty green-pixel masks. Mask coverage ranged from 0 to 99.90% (median 16.00%), showing the color heuristic needs human review before these masks are used downstream. The four flagged images include the two previously reviewed dark frames and dark frames in 3.07 and 3.08. Depth remains `unverified_native`; numeric calibration remains false. The result ZIP is excluded from Git.
+
 ## Roadmap and gates
 
 The handoff describes notebooks EDEN-00 through EDEN-15 across six phases. Only Phase 1's notebook allocation (00–03) is specified in the files currently supplied. Detailed definitions for phases 2–6 await the full SRS.
 
 | Phase | Scope currently known | State |
 | --- | --- | --- |
-| 1 — Data engineering & inventory | EDEN-00–03: numeric inventory, climate ETL, RGB-D pilot, spatial processing | In progress; 00–02 successful saved outputs, 03 pending |
+| 1 — Data engineering & inventory | EDEN-00–03: numeric inventory, climate ETL, RGB-D pilot, spatial processing | In progress; 00–02 pass saved outputs, EDEN-03 partial with QC review open |
 | 2 | Full SRS phase detail unavailable | Pending specification |
 | 3 | Full SRS phase detail unavailable | Pending specification |
 | 4 | Full SRS phase detail unavailable | Pending specification |
 | 5 | Full SRS phase detail unavailable | Pending specification |
 | 6 | Full SRS phase detail unavailable | Pending specification |
+
+### EDEN-04 provisional notebook
+
+[EDEN-04 Climate Forecasting Baseline v1.0](phases/phase-2-climate-forecasting/notebooks/EDEN-04-Climate-Forecasting-Baseline-v1.0.ipynb) is prepared but has not been run. It uses EDEN-01 climate data to compare persistence and same-time-yesterday references for one-hour-ahead air temperature, scoring the primary and chronological protocols separately. This is a working outline because the full SRS is unavailable; no forecast metrics are claimed yet.
 
 Later project areas listed in the handoff include climate forecasting, crop-state estimation, physics-guided multimodal fusion, virtual MPC, and a Three.js dashboard. These remain planned until their module mapping and runnable notebooks are available.
 
@@ -58,7 +68,7 @@ Later project areas listed in the handoff include climate forecasting, crop-stat
 
 ## Run instructions
 
-Run latest notebooks in order in Kaggle. Use CPU and internet for EDEN-00/01/02. Attach EDEN-01 v1.1 output to EDEN-02 (ZIP or supported extracted folder). Keep selective HTTP Range access; do not download the full camera archive. For EDEN-03 v1.0, use CPU, Internet Off, and attach the named EDEN-02 result ZIP. Download its named results ZIP and review the montage/QC flags before handoff. Require each notebook's acceptance status and verify its output manifest. EDEN-03 v1.0 reports image-space features and native depth codes only; it must not claim metric geometry until calibration and depth units are validated.
+Run latest notebooks in order in Kaggle. Use CPU and internet for EDEN-00/01/02. Attach EDEN-01 v1.1 output to EDEN-02 (ZIP or supported extracted folder). Keep selective HTTP Range access; do not download the full camera archive. For EDEN-03 v1.0, use CPU, Internet Off, and attach the named EDEN-02 result ZIP. Review its partial status, empty masks, and dark-image flags before relying on spatial outputs. For provisional EDEN-04 v1.0, use CPU, Internet Off, and attach the EDEN-01 v1.1 `PASS_ETL` result. Download its named result ZIP and review baseline metrics before planning further models. Require each notebook's acceptance status and verify its output manifest. EDEN-03 v1.0 reports image-space features and native depth codes only; it must not claim metric geometry until calibration and depth units are validated.
 
 ## Source
 

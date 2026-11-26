@@ -8,8 +8,8 @@ The project handoff identifies six phases and 16 notebooks (EDEN-00–15), but t
 
 | Phase | Working scope | Current evidence and gate | Short jargon guide |
 | --- | --- | --- | --- |
-| 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; EDEN-03 v1.0 is prepared but not yet run. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
-| 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | Planned. No phase-2 notebook or result was supplied. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
+| 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; EDEN-03 reports PARTIAL_PASS_QC_FLAGS_PRESENT. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
+| 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | Provisional EDEN-04 v1.0 is prepared but unrun; exact phase/notebook allocation awaits the full SRS. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
 | 3 — Crop-state estimation | Convert image/spatial evidence into crop-state features or estimates and assess their quality against available references | Planned. No phase-3 notebook or result was supplied. Gate should include labeled/traceable observations, held-out evaluation, and image/depth QC. | **Segmentation** = labeling pixels by object, such as plant/background. **Feature** = measured input used by a model. **Ground truth** = reference label or measurement used for evaluation. |
 | 4 — Physics-guided multimodal fusion | Combine climate/control time series and crop-state observations with physical constraints or process knowledge | Planned. No phase-4 notebook or result was supplied. Gate should compare climate-only, vision-only, and fused approaches with matched evaluation splits. | **Multimodal** = using different data types together. **Fusion** = combining information sources. **Ablation** = remove one component to see what it contributes. |
 | 5 — Virtual control and MPC | Simulate candidate greenhouse control actions and evaluate constrained virtual model predictive control | Planned. No phase-5 notebook or result was supplied. No physical actuators are in scope per handoff. Gate should test constraints, uncertainty, and safe simulated scenarios before comparing policies. | **MPC** = model predictive control; repeatedly forecasts outcomes and chooses an action over a moving time window. **Setpoint** = desired target. **Constraint** = limit an action or state must obey. |
@@ -74,9 +74,9 @@ Goal: verify EDEN-01, selectively inspect the large camera ZIP, choose a stratif
 
 Observed saved run: upstream manifest and 29 hashes passed; 7,411 genuine archive members indexed; 1,851 candidate pairs, 1,765 eligible, zero ambiguous keys; 36 selected pairs; all 36 decoded at 2160×3840 with uint16 depth; output status PASS_RGBD_PILOT. The notebook explicitly leaves manual montage review and depth-unit/geometry verification pending. Therefore the run does not yet support metric plant-height claims.
 
-### EDEN-03 v1.0 — Spatial processing (prepared; Kaggle run pending)
+### EDEN-03 v1.0 — Spatial processing (executed notebook)
 
-Goal: use the EDEN-02 pilot to create reviewable image-space vegetation masks, summarize native depth codes under those masks, and retain image-quality flags. This notebook is authored but has not been executed; no EDEN-03 outputs or results are claimed.
+Goal: use the EDEN-02 pilot to create image-space vegetation masks, summarize native depth codes under those masks, and retain image-quality flags.
 
 | Cell | What it does | Jargon in brief |
 | --- | --- | --- |
@@ -89,7 +89,27 @@ Goal: use the EDEN-02 pilot to create reviewable image-space vegetation masks, s
 | 7. Review montage and report | Places RGB, mask, and display-scaled depth previews together; reports mask coverage and pending review items. | **Display-scaled** = contrast adjusted for viewing only; source depth values remain unchanged. |
 | 8. Acceptance gate and ZIP | Requires one feature row and mask per pair, retains QC flags, hashes outputs, and writes the named result ZIP. | **Acceptance gate** = required checks before handoff. |
 
+**Saved run:** `PARTIAL_PASS_QC_FLAGS_PRESENT`; 36 input pairs; all 41 output manifest files passed size and SHA-256 checks. Four RGB frames were flagged very dark; nine masks are empty. Mask coverage ranged from 0 to 99.90%, with a 16.00% median. The montage confirms the green-color heuristic behaves inconsistently across the images and needs review before downstream use.
+
 **Limits:** the color rule is an unvalidated first pass. The notebook does not project points into 3D, calculate plant height, convert depth to millimetres, or claim physical canopy size. Human montage review, threshold review, depth-unit/special-code meaning, numeric intrinsics, and reference-plane verification remain pending.
+
+## Phase 2 — provisional EDEN-04 cell guide
+
+### EDEN-04 v1.0 — Climate forecasting baseline (prepared; Kaggle run pending)
+
+**Working scope:** a simple reference forecast using verified EDEN-01 air-temperature measurements. One hour (12 five-minute steps) is a starter horizon within the split file's 72-step maximum. The full SRS is missing, so this notebook ID, phase assignment, target, and horizon remain provisional.
+
+| Cell | What it does | Jargon in brief |
+| --- | --- | --- |
+| 1. Forecast settings | Sets `air_temp_c`, the 12-step horizon, and Kaggle folders. | **Horizon** = how far ahead the forecast is made. |
+| 2. Find and verify EDEN-01 | Finds one v1.1 PASS_ETL ZIP or extracted folder and verifies all manifest files. | **Manifest** = receipt listing output files and fingerprints. |
+| 3. Load climate and splits | Checks target units, unique UTC keys, regular five-minute cadence, and frozen split membership. | **UTC** = shared time standard; **split** = fixed train/validation/test assignment. |
+| 4. Build forecast examples | Makes persistence and same-time-yesterday predictions while excluding failed QC rows, embargoes, and windows crossing split boundaries. | **Persistence** = repeat the latest valid reading. **Embargo** = time buffer kept out of evaluation. |
+| 5. Score baselines | Reports MAE, RMSE, bias, and per-compartment summaries for separate primary and chronological protocols. | **MAE** = average absolute error; **RMSE** penalizes larger errors more; **bias** = average signed error. |
+| 6. Plot and record coverage | Saves a validation example and records window counts and limitations. | **Coverage** = count of usable examples after split and QC rules. |
+| 7. Acceptance and ZIP | Checks both baselines and holdout windows, writes a provisional status and hash-listed result ZIP. | **Acceptance gate** = required checks before handoff. |
+
+No EDEN-04 forecast outputs or metrics are claimed until its Kaggle run is returned and reviewed.
 
 ## Required next documentation when artifacts arrive
 

@@ -8,7 +8,7 @@ The project handoff identifies six phases and 16 notebooks (EDEN-00–15), but t
 
 | Phase | Working scope | Current evidence and gate | Short jargon guide |
 | --- | --- | --- | --- |
-| 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; 03 is pending. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
+| 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; EDEN-03 v1.0 is prepared but not yet run. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
 | 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | Planned. No phase-2 notebook or result was supplied. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
 | 3 — Crop-state estimation | Convert image/spatial evidence into crop-state features or estimates and assess their quality against available references | Planned. No phase-3 notebook or result was supplied. Gate should include labeled/traceable observations, held-out evaluation, and image/depth QC. | **Segmentation** = labeling pixels by object, such as plant/background. **Feature** = measured input used by a model. **Ground truth** = reference label or measurement used for evaluation. |
 | 4 — Physics-guided multimodal fusion | Combine climate/control time series and crop-state observations with physical constraints or process knowledge | Planned. No phase-4 notebook or result was supplied. Gate should compare climate-only, vision-only, and fused approaches with matched evaluation splits. | **Multimodal** = using different data types together. **Fusion** = combining information sources. **Ablation** = remove one component to see what it contributes. |
@@ -73,6 +73,23 @@ Goal: verify EDEN-01, selectively inspect the large camera ZIP, choose a stratif
 | 9. Acceptance and named output ZIP | Checks pair counts, unique IDs/keys and required artifacts, then writes named results ZIP with file hashes and PASS status. | **Acceptance gate** = required checks before handoff. **SHA-256** = file fingerprint. |
 
 Observed saved run: upstream manifest and 29 hashes passed; 7,411 genuine archive members indexed; 1,851 candidate pairs, 1,765 eligible, zero ambiguous keys; 36 selected pairs; all 36 decoded at 2160×3840 with uint16 depth; output status PASS_RGBD_PILOT. The notebook explicitly leaves manual montage review and depth-unit/geometry verification pending. Therefore the run does not yet support metric plant-height claims.
+
+### EDEN-03 v1.0 — Spatial processing (prepared; Kaggle run pending)
+
+Goal: use the EDEN-02 pilot to create reviewable image-space vegetation masks, summarize native depth codes under those masks, and retain image-quality flags. This notebook is authored but has not been executed; no EDEN-03 outputs or results are claimed.
+
+| Cell | What it does | Jargon in brief |
+| --- | --- | --- |
+| 1. Folders and image-space rules | Imports tools, sets input/output paths, preview size, and visible color thresholds. | **Image-space** = pixels or proportions, without real-world units. |
+| 2. Verify EDEN-02 result | Finds the named ZIP or extracted folder, confirms producer/version/status, checks every manifest size and SHA-256, then unpacks if needed. | **SHA-256** = file fingerprint used to detect changes. |
+| 3. Load pair index | Reads the 36-row RGB/depth table, checks unique IDs and paths, and reads calibration status as evidence only. | **Pair index** = table linking each color image to its matching depth image. |
+| 4. Image quality checks | Measures RGB brightness, depth dtype, and shares of code values 0 and 65535; explicitly retains the two reviewed dark frames. | **dtype** = how pixel values are stored; a **code value** is a number whose physical meaning may be unknown. |
+| 5. Green-pixel mask | Applies a simple HSV and Excess Green color rule, saves reduced masks, and measures mask area and bounding box in pixels. | **HSV** = hue, saturation, value color representation. **Excess Green** = score emphasizing green over red/blue. **Heuristic** = practical hand-set rule, not a trained model. |
+| 6. Native depth summaries | Computes code percentiles under each mask and counts zero/65535 codes without assuming those are invalid. Writes CSV and optional Parquet features. | **Percentile** = value below which a given share of observations falls. **Native depth code** = original stored number, not verified distance. |
+| 7. Review montage and report | Places RGB, mask, and display-scaled depth previews together; reports mask coverage and pending review items. | **Display-scaled** = contrast adjusted for viewing only; source depth values remain unchanged. |
+| 8. Acceptance gate and ZIP | Requires one feature row and mask per pair, retains QC flags, hashes outputs, and writes the named result ZIP. | **Acceptance gate** = required checks before handoff. |
+
+**Limits:** the color rule is an unvalidated first pass. The notebook does not project points into 3D, calculate plant height, convert depth to millimetres, or claim physical canopy size. Human montage review, threshold review, depth-unit/special-code meaning, numeric intrinsics, and reference-plane verification remain pending.
 
 ## Required next documentation when artifacts arrive
 

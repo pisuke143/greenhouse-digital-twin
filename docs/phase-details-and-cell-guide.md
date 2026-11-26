@@ -1,19 +1,19 @@
 # PROJECT EDEN phase guide and notebook cell notes
 
-This guide covers actual notebook source and saved run evidence where available. EDEN-04 has a verified saved bundle with a documented window-contract defect. EDEN-05 is prepared but unrun. Later phase assignments remain a working outline pending the full SRS.
+This guide records actual source and saved evidence. The original handbook and Notion phase map were recovered and agree on the six phases below. The climate notebooks named 04/05 were created out of that sequence; they remain useful prototypes for original 08. New EDEN-06 consolidates the missing original 04–06 vision work and is awaiting Kaggle execution.
 
-## Six-phase project map
+## Six-phase project map — original handbook
 
-The project handoff identifies six phases and 16 notebooks (EDEN-00–15), but the full SRS that defines the exact phase boundaries and notebook mapping was not present in the supplied files. The following is a **working outline inferred from the described project sequence**. Confirm or revise it against the SRS before treating phases 2–6 as the approved architecture.
+| Phase | Original scope | Gate / brief terminology |
+| --- | --- | --- |
+| 1 — Data engineering & inventory | 00 inventory, 01 climate ETL, 02 RGB-D acquisition, 03 spatial processing | Verified tables/images, frozen splits, reviewed quality and calibration. ETL = extract, transform, load. RGB-D = color plus depth. |
+| 2 — Visual intelligence & climate baselines | 04 vision baselines, 05 RGB-D network, 06 frozen features, 07 alignment, 08 climate baselines | Valid labeled comparisons; group separation; no future imagery; training-only preprocessing. Embedding = compact learned image description. |
+| 3 — Physics, temporal modeling & fusion | 09 physics calibration, 10 action-conditioned temporal model, 11 fusion | Compare physics, climate-only and fused models under the same protocol. Fusion = combine different evidence sources. |
+| 4 — Twin replay & virtual control | 12 replay/scenarios, 13 constrained control | Check state initialization, simulated rollouts and action feasibility. MPC = choose actions by predicting future outcomes repeatedly. |
+| 5 — Research evaluation & browser export | 14 frozen evaluation, 15 export | Freeze selection, disclose earlier test exposure, verify browser predictions match the exported model. Export parity = the two implementations agree. |
+| 6 — Website, dashboard & release | Shared browser state, worker inference, 2D/3D dashboard, deployment | Verify observed/predicted/simulated provenance, consistent state and reproducible release. Provenance = where a value came from. |
 
-| Phase | Working scope | Current evidence and gate | Short jargon guide |
-| --- | --- | --- | --- |
-| 1 — Data engineering and inventory | EDEN-00–03: inspect and verify source data, build climate tables, acquire RGB-D pilot, then spatial processing | 00 and 01 have saved successful outputs; 02 reports PASS_RGBD_PILOT; EDEN-03 reports PARTIAL_PASS_QC_FLAGS_PRESENT. Gate: verified inputs, stable keys/splits, valid pairs, and reviewed calibration/QC before geometry claims. | **ETL** = extract, transform, load data. **RGB-D** = color image plus depth image. **QC** = quality control. **Manifest** = file inventory with hashes and provenance. |
-| 2 — Climate forecasting | Prepare forecast targets/features and compare time-aware forecasting baselines using only information available at prediction time | EDEN-04 ran but its seasonal window violates the frozen contract; EDEN-05 is prepared with complete window checks. Exact phase/notebook allocation awaits the full SRS. Gate should include chronological validation, leakage checks, baseline comparison, and uncertainty reporting. | **Forecast horizon** = how far ahead a prediction reaches. **Baseline** = simple reference model. **Leakage** = using information that would not exist at prediction time. |
-| 3 — Crop-state estimation | Convert image/spatial evidence into crop-state features or estimates and assess their quality against available references | Planned. No phase-3 notebook or result was supplied. Gate should include labeled/traceable observations, held-out evaluation, and image/depth QC. | **Segmentation** = labeling pixels by object, such as plant/background. **Feature** = measured input used by a model. **Ground truth** = reference label or measurement used for evaluation. |
-| 4 — Physics-guided multimodal fusion | Combine climate/control time series and crop-state observations with physical constraints or process knowledge | Planned. No phase-4 notebook or result was supplied. Gate should compare climate-only, vision-only, and fused approaches with matched evaluation splits. | **Multimodal** = using different data types together. **Fusion** = combining information sources. **Ablation** = remove one component to see what it contributes. |
-| 5 — Virtual control and MPC | Simulate candidate greenhouse control actions and evaluate constrained virtual model predictive control | Planned. No phase-5 notebook or result was supplied. No physical actuators are in scope per handoff. Gate should test constraints, uncertainty, and safe simulated scenarios before comparing policies. | **MPC** = model predictive control; repeatedly forecasts outcomes and chooses an action over a moving time window. **Setpoint** = desired target. **Constraint** = limit an action or state must obey. |
-| 6 — Interactive digital twin and delivery | Present historical replay, forecasts, crop state, and virtual control scenarios in a static interactive Three.js dashboard | Planned. No phase-6 notebook or site was supplied. Gate should check provenance, state consistency, uncertainty visibility, and reproducible static deployment. | **Three.js** = JavaScript library for 3D graphics. **Replay** = show recorded data over time. **Provenance** = where data/results came from. |
+The recovered source is EDEN SRS & Implementation Handbook rev 1.0. The separate v2 file named by the handoff is still unavailable; no v2-only requirements are inferred. Original 07–15 and the website remain planned.
 
 ## Phase 1 — cell-by-cell guide
 
@@ -93,11 +93,11 @@ Goal: use the EDEN-02 pilot to create image-space vegetation masks, summarize na
 
 **Limits:** the color rule is an unvalidated first pass. The notebook does not project points into 3D, calculate plant height, convert depth to millimetres, or claim physical canopy size. Human montage review, threshold review, depth-unit/special-code meaning, numeric intrinsics, and reference-plane verification remain pending.
 
-## Phase 2 — provisional EDEN-04 cell guide
+## Historical climate prototypes — useful for original Notebook 08
 
 ### EDEN-04 v1.0 — Climate forecasting baseline (saved run; protocol correction required)
 
-**Working scope:** a simple reference forecast using verified EDEN-01 air-temperature measurements. One hour (12 five-minute steps) is a starter horizon within the split file's 72-step maximum. The full SRS is missing, so this notebook ID, phase assignment, target, and horizon remain provisional.
+**Historical scope:** a one-hour temperature baseline using EDEN-01. This file was named 04 before reconciling the original roadmap. It does not implement original 04 vision baselines; retain its outputs as diagnostic climate evidence for original 08.
 
 | Cell | What it does | Jargon in brief |
 | --- | --- | --- |
@@ -113,7 +113,7 @@ Goal: use the EDEN-02 pilot to create image-space vegetation masks, summarize na
 
 **Review correction:** Cell 4 checked origin and target split labels but did not check the seasonal predictor's history label. Its reading is 23 hours before the origin, beyond the six-hour history contract. Exactly 1,656 validation and 1,656 test rows in the chronological output use history from a different split or embargo. Preserve the saved scores as diagnostic only. EDEN-05 rebuilds valid matched windows and recomputes persistence.
 
-### EDEN-05 v1.0 — Climate model (prepared; Kaggle run pending)
+### Legacy EDEN-05 v1.0 — Climate model (saved result reviewed)
 
 Input: EDEN-01 v1.1 and EDEN-04 v1.0 result bundles. Output: EDEN-05-Climate-Model-Results-v1.0.zip. CPU, Internet Off; leave test scoring disabled during development.
 
@@ -127,7 +127,33 @@ Input: EDEN-01 v1.1 and EDEN-04 v1.0 result bundles. Output: EDEN-05-Climate-Mod
 | 6. Evaluate | Compare Ridge/persistence on identical validation rows; optionally score frozen models on test; report exploratory day-block error intervals. | Bootstrap = resample groups of observations to inspect estimate variability. |
 | 7. Package | Verify matched counts, export versions, contracts, models, reports, and hashed ZIP. | A pipeline pass does not imply improvement over persistence. |
 
-No EDEN-05 model metrics are claimed yet. The notebook's syntax was parsed without running its cells. Its scope remains provisional pending the full SRS.
+**Saved evidence:** all 15 manifest hashes verified; `PASS_VALIDATION_MODEL_PILOT_PROVISIONAL`. Primary validation Ridge/persistence MAE: 0.8188/0.8305 °C on 20,138 rows. Chronological: 0.7832/0.8229 °C on 27,444 rows. Test scoring was off. These results are development evidence for original 08, not completion of original 05 vision training.
+
+## EDEN-06 — Vision recovery and feature extraction v1.0
+
+**Status:** implemented, statically checked, not run locally; Kaggle results pending. Combines the missing original 04 baseline, 05 neural model and 06 feature-export work. After its result review, the planned next notebook is original 07 alignment.
+
+**Inputs:** EDEN-01 v1.1, EDEN-02 v1.1 and EDEN-03 v1.0 results. GPU and Internet On. It fetches 383 RGB/depth pairs from the labeled 2023 pre-trial (about 5.61 GB); publisher test and infrared are excluded. No extra manual dataset upload is required.
+
+| Cell | Short note | Term explained |
+| --- | --- | --- |
+| 1. Settings | Set GPU training, folders, seed, 224-pixel inputs, and versions. | Seed = starting point for repeatable random choices. |
+| 2. Upstream verification | Check manifests, hashes, producer lineage, and unchanged 2024 splits. | Hash = file fingerprint. |
+| 3. Open pre-trial | Read the ZIP index and individual files through bounded partial requests; never fetch the full archive. | HTTP Range = request only a selected byte interval. |
+| 4. Labels and groups | Match real RGB/depth filenames to four measured traits; group repeated plant identities across dates. | Label = measured answer. Grouped validation keeps related plants together. |
+| 5. Paired preprocessing | Resize/pad both views together; preserve depth codes; cache relative-depth inputs and simple color/depth features. | Letterbox = preserve shape and pad unused borders. Relative depth is not physical distance. |
+| 6. Original 04 baselines | Compare training mean, Ridge and Random Forest on identical eligible validation labels. | MAE = average absolute error. RMSE penalizes large errors more. |
+| 7. Original 05 network | Build MobileNetV3 RGB and shallow depth branches, a shared representation and four missing-label-aware trait heads. | CNN = network that learns image patterns. Masked Huber loss ignores absent labels and softens large errors. |
+| 8. Train and compare | Fit RGB-only, depth-only and RGB-D; select each best epoch using development validation; freeze the RGB-D encoder. | Ablation = remove an input to measure what it contributes. |
+| 9. Original 06 OOF | Train three RGB-D fold models; each predicts plant groups absent from its training. Fold scales use training only. | Out-of-fold = prediction from a model that did not train on that group. |
+| 10. Canopy features | Apply the disjoint frozen model to 2024 images; export embeddings, proxy trait means/variance and QC flags; mask unusable rows. | Dropout variance = variability across repeated model predictions, not calibrated confidence. |
+| 11. Acceptance and ZIP | Check all module deliverables and unchanged splits; package allow-listed artifacts with sizes/hashes. | Pipeline pass = required files/checks succeeded, not proof of useful predictions. |
+
+**Output contract:** `vision_baseline.json`, validation `metrics.json` and `predictions.parquet`; `models/vision.pt` and config; `vision/vision_features.parquet` for the 2024 canopy pilot; `vision/oof_features.parquet` for genuine 2023 training-fold predictions; split/audit/source reports; manifest. No raw images are required downstream.
+
+**Leakage rules:** 2023 publisher train/validation samples form a new 80/20 plant-group development protocol, with three OOF folds inside training. Publisher test is excluded. The final encoder sees only 2023 training data, which is disjoint from 2024 fusion data. The 2024 table uses this frozen-disjoint alternative; it is not mislabeled as canopy K-fold predictions. Existing 2024 compartment and chronological splits are preserved.
+
+**Limits:** single-plant-to-canopy transfer is unvalidated; canopy values use `proxy_*` fields. Native depth units and physical geometry remain unverified; color masks remain heuristic. Dropout variance is uncalibrated. Preparation inspected source test metadata, but did not evaluate or select using test performance; the notebook never loads publisher test labels. A successful run establishes computational outputs, not full scientific acceptance.
 
 ## Required next documentation when artifacts arrive
 

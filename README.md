@@ -63,3 +63,7 @@ Run latest notebooks in order in Kaggle. Use CPU and internet for EDEN-00/01/02.
 ## Source
 
 Maree et al. (2025), [4th Autonomous Greenhouse Challenge: Dwarf Tomato Timeseries and Images, v1](https://doi.org/10.4121/fa102772-32db-4b30-bace-12f2016722ce.v1), 4TU.ResearchData, CC BY 4.0.
+
+### Output-captured EDEN-02 notebook
+
+The companion [EDEN-02-RGBD-Acquisition-v1.1-with-outputs.ipynb](phases/phase-1-data-engineering/notebooks/EDEN-02-RGBD-Acquisition-v1.1-with-outputs.ipynb) preserves the user's executed notebook and cell outputs. Its saved run verifies the EDEN-01 manifest and 29 hashes, indexes 7,411 genuine camera archive members, finds 1,851 RGB/depth pairs (1,765 eligible; zero ambiguous), selects 36 pairs across the frozen splits, decodes all 36 at 2160×3840 as uint16 depth, and reports PASS for the RGB-D pilot. The notebook explicitly leaves manual montage review and depth-unit/geometry verification pending. Its saved named output ZIP is 559,027,047 bytes; the ZIP itself remains excluded from Git.

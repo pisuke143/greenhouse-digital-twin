@@ -1,6 +1,6 @@
 # PROJECT EDEN phase guide and notebook cell notes
 
-This guide records actual source and saved evidence. The original handbook and Notion phase map were recovered and agree on the six phases below. The climate notebooks named 04/05 were created out of that sequence; they remain useful prototypes for original 08. EDEN-06 consolidates the missing original 04–06 vision work; its saved outputs are reviewed below. EDEN-07 alignment is prepared for Kaggle.
+This guide records actual source and saved evidence. The original handbook and Notion phase map were recovered and agree on the six phases below. The climate notebooks named 04/05 were created out of that sequence; they remain useful prototypes for original 08. EDEN-06 consolidates the missing original 04–06 vision work; its saved outputs are reviewed below. EDEN-07 alignment results are verified; EDEN-08 climate baselines are prepared for Kaggle.
 
 ## Six-phase project map — original handbook
 
@@ -13,7 +13,7 @@ This guide records actual source and saved evidence. The original handbook and N
 | 5 — Research evaluation & browser export | 14 frozen evaluation, 15 export | Freeze selection, disclose earlier test exposure, verify browser predictions match the exported model. Export parity = the two implementations agree. |
 | 6 — Website, dashboard & release | Shared browser state, worker inference, 2D/3D dashboard, deployment | Verify observed/predicted/simulated provenance, consistent state and reproducible release. Provenance = where a value came from. |
 
-The recovered source is EDEN SRS & Implementation Handbook rev 1.0. The separate v2 file named by the handoff is still unavailable; no v2-only requirements are inferred. Original 07 is now prepared; 08–15 and the website remain planned.
+The recovered source is EDEN SRS & Implementation Handbook rev 1.0. The separate v2 file named by the handoff is still unavailable; no v2-only requirements are inferred. Original 07 has a verified saved result, 08 is prepared, and 09–15 plus the website remain planned.
 
 ## Phase 1 — cell-by-cell guide
 
@@ -170,7 +170,7 @@ RGB-only has lower error on three traits; RGB-D has lower leaf-area error. There
 
 ## EDEN-07 — Climate and vision alignment v1.0
 
-**Status:** prepared; schema, syntax and source contracts checked without executing its cells. **Kaggle:** CPU, Internet Off, attach EDEN-01 v1.1 and EDEN-06 v1.0 results. No other dataset is needed.
+**Status:** saved Kaggle result verified; 16/16 output hashes and all 1,273,094 full window intervals checked independently. **Original run settings:** CPU, Internet Off; EDEN-01 v1.1 and EDEN-06 v1.0 inputs.
 
 | Cell | Short note | Term explained |
 | --- | --- | --- |
@@ -190,7 +190,30 @@ RGB-only has lower error on three traits; RGB-D has lower leaf-area error. There
 
 **Outputs:** `data/aligned.parquet` (one copy per evaluation protocol), `data/window_index.parquet`, `data/windows.json`, `data/scaler.json`, feature/split/schema contracts, coverage and rejection reports, manifest. Raw missing values stay missing. Later models may use zero after normalization only alongside the explicit validity mask. Constant/absent training fields stay inactive even if they vary in validation/test.
 
-**Next:** review the actual EDEN-07 results, then build original EDEN-08 climate baselines on matched windows. No forecasting performance is claimed by alignment.
+**Saved evidence:** 259,932 aligned rows represent 129,966 observations under two protocols. All row pointers, full interval continuity, split membership, target QC and past-image checks pass. Recomputed all 158 scaler fields per protocol from training data. At one-hour validation: primary 20,138 windows / 320 with vision; chronological 27,444 / 578. No forecast performance is claimed by alignment. Next: prepared original EDEN-08 climate baselines.
+
+## EDEN-08 — Climate baselines v1.0
+
+**Status:** prepared and statically checked; no local execution or model results. **Kaggle:** CPU, Internet Off, attach only EDEN-07 v1.0 results. Uses all eligible training data and validation windows at five horizons for three climate targets, with test excluded from modeling.
+
+| Cell | Short note | Term explained |
+| --- | --- | --- |
+| 1. Settings | Fix the model settings, three targets and CPU folders. | Persistence = repeat the current reading. |
+| 2. Verify EDEN-07 | Check every input file/hash and the window, split and scaler contracts. | Contract = rules the next notebook must obey. |
+| 3. Check development windows | Exclude test; check every timestamp across each history-to-target interval and required target validity. | Development = training plus validation, separate from test. |
+| 4. Past-only features | Build current values, 12/72-reading means, target lags, masks and known future clock features; fit training-only time-of-day reference. | Coverage = fraction of readings actually present in a summary. |
+| 5. Fit/freeze models | Train Ridge searches and 30 fixed-config boosted regressors; choose Ridge alpha on validation; verify exported prediction parity. | Ridge = penalized weighted sum; boosting = a sequence of corrective trees; parity = reloaded model agrees. |
+| 6. Matched evaluation | Score all four models on identical rows; report MAE/RMSE/bias/skill and paired UTC-day error intervals. | Day-block resampling keeps neighboring errors together; intervals remain exploratory. |
+| 7. Plots/contracts | Show every horizon and save exact input/normalization definitions. | Horizon = how far ahead the forecast reaches. |
+| 8. Gate/package | Verify finite matched predictions, frozen files and validation-only scope; package the named result. | A pipeline pass does not mean complex models beat persistence. |
+
+**Seasonal qualification:** daily seasonal persistence violates the six-hour history because its needed observation is 18–23.75 hours before origin. It is explicitly not run. `seasonal_mean_train_only` is a separate baseline learned from training clock-time averages. No history limit or holdout rule is weakened.
+
+**Forecasting scope:** same past climate/weather/control summaries and clock features for Ridge/boosting. No future measured weather, future realized actions or image features. Inputs retain validity/coverage indicators; engineered-feature normalization fits training rows only. Models predict normalized changes from the latest valid target and restore physical units without clipping.
+
+**Outputs:** `data/baseline_predictions.parquet`, metrics, validation selections, paired day-block MAE-difference intervals, portable Ridge coefficients, boosted model exports, model-input contracts and manifest. Score development validation only. Daily intervals are not calibrated prediction bands or independent test evidence. Original EDEN-09 physics calibration follows after review.
+
+**Notion documentation:** [Phase 2](https://app.notion.com/p/424637e14f0f816894c7d81821ec09e0) contains full source-cell toggles for 06/07/08 and the historical 04/05 climate prototypes, with saved versus prepared status clearly separated.
 
 ## Required next documentation when artifacts arrive
 

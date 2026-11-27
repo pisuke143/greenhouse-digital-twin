@@ -8,14 +8,15 @@ PROJECT EDEN (Environmental Digital Twin for Ecosystem Intelligence and Navigati
 - **EDEN-04 v1.0:** saved run received; all 6 manifest file hashes verified. Saved status is `PASS_BASELINE_EVAL_PROVISIONAL`, but review found seasonal history exceeding the six-hour limit and crossing chronological split boundaries. Treat these scores as diagnostic.
 - **Legacy EDEN-05 climate prototype:** saved run reviewed; all 15 manifest hashes verified. Validation-only Ridge results are recorded below. This is early work for original Notebook 08, not original vision Notebook 05.
 - **EDEN-06 vision recovery:** saved run reviewed; 28/28 file hashes and all 24 validation metrics verified. Original vision 04–06 outputs exist: baselines, three neural comparisons, frozen canopy features, and 311 genuine OOF rows. Canopy transfer remains unvalidated.
-- **EDEN-07 alignment:** prepared and statically checked; awaiting Kaggle execution. **EDEN-08–15 and dashboard:** planned, following the recovered original roadmap.
+- **EDEN-07 alignment:** saved result verified: 16/16 hashes, 259,932 aligned rows and 1,273,094 window rows. Complete intervals, image timing/splits and both training scalers independently checked.
+- **EDEN-08 climate baselines:** prepared and statically checked, awaiting Kaggle execution. **EDEN-09–15 and dashboard:** planned, following the original roadmap.
 - **Plan correction:** the climate notebooks named 04/05 were produced out of the original sequence. Their files and results are retained as climate prototypes. They do not establish completion of the original vision stages.
 
 ## Repository structure
 
 - `phases/phase-1-data-engineering/notebooks/` contains latest notebook versions available here.
 - `phases/phase-2-visual-intelligence/notebooks/` contains consolidated EDEN-06 vision recovery and EDEN-07 climate/vision alignment.
-- `phases/phase-2-climate-forecasting/notebooks/` preserves the legacy climate prototypes named EDEN-04/05; their results may inform original Notebook 08.
+- `phases/phase-2-climate-forecasting/notebooks/` contains original EDEN-08 climate baselines and preserves the historical climate prototypes named EDEN-04/05.
 - `archive/phase-1/prior-notebook-versions/` retains originals and earlier versions.
 - Results archives and raw data are excluded because they are large; EDEN-02 result ZIP is ~559 MB and the source camera archive is ~31.4 GB.
 
@@ -49,7 +50,7 @@ The original **EDEN SRS & Implementation Handbook rev 1.0** and the existing Not
 | Phase | Original notebooks and purpose | Current state / gate |
 | --- | --- | --- |
 | 1 — Data engineering & inventory | 00 inventory; 01 climate ETL; 02 RGB-D acquisition; 03 spatial processing | Saved 00–03 results; 03 has unresolved mask/calibration QC. |
-| 2 — Visual intelligence & climate baselines | 04 vision baselines; 05 RGB-D model; 06 frozen features; 07 climate/vision alignment; 08 climate baselines | Original 04–06 computational outputs verified through consolidated 06; scientific limits remain. 07 prepared; 08 planned. |
+| 2 — Visual intelligence & climate baselines | 04 vision baselines; 05 RGB-D model; 06 frozen features; 07 climate/vision alignment; 08 climate baselines | Original 04–06 computational outputs verified through consolidated 06; 07 alignment verified; 08 prepared. Scientific vision limits remain. |
 | 3 — Physics, temporal modeling & fusion | 09 physics calibration; 10 action-conditioned temporal model; 11 physics/vision/climate fusion | Planned. Fit on training only; compare matched models and missing-image behavior. |
 | 4 — Twin replay & virtual control | 12 replay and scenarios; 13 constrained virtual control | Planned. Distinguish historical replay from simulated intervention; no physical actuators. |
 | 5 — Research evaluation & browser export | 14 frozen evaluation; 15 browser model/artifact export | Planned. Record earlier test exposure; verify evaluation protocol and export parity. |
@@ -94,7 +95,7 @@ RGB-D has lower leaf-area error, while RGB-only has lower error on the other thr
 
 All 36 canopy IDs, compartments and both split labels match EDEN-02. There are 32 usable feature rows and four masked dark frames. This establishes computed features, not validated canopy measurements, calibrated uncertainty, or proven climate-forecast improvement. The sparse pilot covers only a small fraction of climate timestamps under the frozen history limit.
 
-### Next to run: EDEN-07 climate and vision alignment
+### EDEN-07 saved alignment result and review
 
 [EDEN-07 Climate-Vision Alignment v1.0](phases/phase-2-visual-intelligence/notebooks/EDEN-07-Climate-Vision-Alignment-v1.0.ipynb) follows original module 07. **CPU, Internet Off; attach EDEN-01 v1.1 and EDEN-06 v1.0 results**, as ZIPs or extracted folders. No raw images or extra dataset are needed.
 
@@ -102,7 +103,25 @@ It verifies both inputs, preserves the frozen splits, joins recorded climate/wea
 
 The output includes separate primary/chronological aligned rows; matched temperature/RH/CO₂ forecast-window indices at 15/30/60/180/360 minutes; training-only scalers with validity masks; and explicit image/missingness coverage. Trait proxies and green masks are audit-only, excluded from default input lists. Embeddings remain optional experimental inputs. Recorded future weather and realized controls are not supplied as forecasting covariates.
 
-**Return:** `EDEN-07-Climate-Vision-Alignment-Results-v1.0.zip`. Required downstream artifacts are `data/aligned.parquet`, `data/window_index.parquet`, `data/windows.json`, `data/scaler.json`, and the feature/split contracts. The notebook is prepared, not executed locally. After reviewing its real result, continue with **original EDEN-08 climate baselines**.
+**Saved result:** `PASS_ALIGNMENT_SPARSE_VISION_TRANSFER_UNVALIDATED`; 15,489,514-byte ZIP, **16/16** manifest file sizes/hashes verified, CRC checks pass. It contains **259,932 aligned rows** (129,966 climate observations under two separate protocols) and **1,273,094 forecast-window rows**, not independent samples.
+
+Every full history-to-target interval was independently checked for five-minute continuity, group/split boundaries and target QC. Image timestamps and split membership match EDEN-06 with no future matches. All **158 scaler fields per protocol** match recomputed training statistics. The image-level fit uses 22 usable training images for primary and eight for chronological.
+
+At one-hour validation, usable vision covers **320/20,138 primary windows (1.59%)** and **578/27,444 chronological windows (2.11%)**. The sparse pilot is a material limitation; no canopy measurement or climate benefit is established. The verified artifacts can feed the planned climate-only baseline comparison.
+
+### Next to run: EDEN-08 climate baselines
+
+[EDEN-08 Climate Baselines v1.0](phases/phase-2-climate-forecasting/notebooks/EDEN-08-Climate-Baselines-v1.0.ipynb) follows original module 08. **CPU, Internet Off; attach only EDEN-07 v1.0 results**, as a ZIP or extracted folder. No new dataset or GPU is needed. Its cells have not been executed locally.
+
+It compares persistence, a training-only time-of-day mean, Ridge and histogram gradient boosting for **temperature, RH and CO₂** at **15/30/60/180/360 minutes**. Ridge/boosting share the same past-only summaries, masks and known clock features. Both protocols use their own training data/scalers. Ridge selects penalties on validation; boosting has a fixed configuration with internal early stopping disabled. All models are scored on identical validation rows per target/horizon. Test rows are excluded before feature construction; test scoring remains off.
+
+**Original-plan qualification:** daily seasonal persistence needs a reading 18–23.75 hours before the forecast origin, outside the frozen six-hour history. It is explicitly `NOT_RUN_CONTRACT_CONFLICT`. The training-only clock-time mean is a separately named seasonal reference; it is not yesterday's observation. This does not silently change the history contract or claim every original seasonal-baseline requirement is met.
+
+**Outputs:** matched `baseline_predictions.parquet`, physical-unit MAE/RMSE/bias/skill, model selection records, frozen Ridge/boosting exports, exploratory paired day-block error intervals, input contracts and manifest. Completed protocol/horizon model blocks can be reused from the same-session cache. Full training data is used: 10 multi-target Ridge searches and 30 boosted regressors. No forecasting results are claimed before the Kaggle run.
+
+**Return:** `EDEN-08-Climate-Baselines-Results-v1.0.zip`. After reviewing the actual result, continue with **original EDEN-09 physics calibration**.
+
+**Notion:** [Phase 2 notes and full cell toggles](https://app.notion.com/p/424637e14f0f816894c7d81821ec09e0) are updated through prepared EDEN-08, including verified 06/07 results and historical 04/05 prototypes. All 42 documented code cells were checked against source; the phase hub and Phase 1 handoff now point to the current stage.
 
 ## Reproducibility rules
 
@@ -114,7 +133,7 @@ The output includes separate primary/chronological aligned rows; matched tempera
 
 ## Run instructions
 
-Run the phase-1 notebooks in their documented order. EDEN-03 requires the EDEN-02 result and produces image-space/native-depth features, with QC review still pending. For the next run, use EDEN-07 on CPU with EDEN-01 and EDEN-06 results. Legacy climate 04/05 results are not inputs to alignment. Require each handoff's manifest verification and review its limitations before moving on.
+Run the phase-1 notebooks in their documented order. EDEN-03 requires the EDEN-02 result and produces image-space/native-depth features, with QC review still pending. For the next run, use EDEN-08 on CPU with only EDEN-07 results and Internet Off. Legacy climate 04/05 results are not inputs to this comparison. Require each handoff's manifest verification and review its limitations before moving on.
 
 ## Source
 
